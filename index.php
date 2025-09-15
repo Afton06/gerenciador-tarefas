@@ -2,8 +2,14 @@
 // Inicia a sessão para usar mensagens de feedback
 session_start();
 
-// Inclui o arquivo de conexão com o banco de dados
+// Inclui a classe de conexão com o banco de dados
 include 'conexao.php';
+
+// Cria uma instância da classe de conexão
+$database = new Conexao();
+
+// Obtém a conexão ativa
+$conn = $database->getConnection();
 
 // Inicializa as variáveis para a consulta preparada
 $where_clause = "";
