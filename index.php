@@ -1,19 +1,25 @@
 <?php
+// Inicia a sessão para usar mensagens de feedback
+session_start();
+
 // Inclui o arquivo de conexão com o banco de dados
 include 'conexao.php';
 
-// Inicializa a cláusula WHERE para o filtro
+// Inicializa as variáveis para a consulta preparada
 $where_clause = "";
+$bind_params = [];
+$bind_types = "";
 
 // Verifica se há um filtro de status na URL
 if (isset($_GET['status']) && $_GET['status'] != "") {
     $status_filtro = $_GET['status'];
     // Usa uma consulta preparada para evitar injeção de SQL
     $where_clause = "WHERE tarefas.status = ?";
+    $bind_params[] = &$status_filtro;
+    $bind_types .= "s";
 }
 
 // Define o comando SQL para selecionar todas as tarefas
-// LEFT JOIN para incluir tarefas mesmo que não tenham categoria
 $sql = "SELECT tarefas.*, categorias.nome AS categoria_nome 
         FROM tarefas 
         LEFT JOIN categorias ON tarefas.id_categoria = categorias.id 
@@ -23,9 +29,9 @@ $sql = "SELECT tarefas.*, categorias.nome AS categoria_nome
 // Prepara a consulta para execução segura
 $stmt = $conn->prepare($sql);
 
-// Se houver um filtro de status, bind o parâmetro
-if ($where_clause != "") {
-    $stmt->bind_param("s", $status_filtro);
+// Se houver um filtro de status, vincula o parâmetro
+if (!empty($bind_params)) {
+    $stmt->bind_param($bind_types, ...$bind_params);
 }
 
 // Executa a consulta
@@ -43,124 +49,23 @@ $result_categorias = $conn->query($sql_categorias);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador de Tarefas</title>
-    <style>
-            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-
-    body {
-        font-family: 'Poppins', sans-serif;
-        margin: 0;
-        padding: 20px;
-        background-color: #f4f7f9;
-        color: #333;
-    }
-
-    .container {
-        max-width: 900px;
-        margin: auto;
-        background-color: #fff;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    h1, h3 {
-        color: #2c3e50;
-        border-bottom: 2px solid #e74c3c;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
-    }
-
-    form, .filtro-form {
-        margin-bottom: 30px;
-        padding: 20px;
-        background-color: #f9f9f9;
-        border-radius: 8px;
-        border: 1px solid #eee;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
-
-    th, td {
-        padding: 15px;
-        text-align: left;
-        border-bottom: 1px solid #e0e0e0;
-    }
-
-    th {
-        background-color: #eaf2f8;
-        color: #333;
-        font-weight: 600;
-    }
-
-    tr:hover {
-        background-color: #f5f5f5;
-    }
-
-    .status-concluida {
-        color: #28a745;
-        font-weight: bold;
-    }
-
-    .status-pendente {
-        color: #ffc107;
-        font-weight: bold;
-    }
-
-    .tarefa-concluida {
-        text-decoration: line-through;
-        color: #888;
-    }
-
-    .botoes-acao {
-        display: flex;
-        gap: 8px;
-    }
-
-    .botoes-acao a {
-        text-decoration: none;
-        padding: 8px 12px;
-        border-radius: 5px;
-        font-weight: 600;
-        transition: background-color 0.3s, color 0.3s;
-    }
-
-    .botoes-acao .editar {
-        background-color: #f39c12;
-        color: white;
-    }
-
-    .botoes-acao .excluir {
-        background-color: #e74c3c;
-        color: white;
-    }
-    
-    .botoes-acao .editar:hover, .botoes-acao .excluir:hover {
-        opacity: 0.9;
-    }
-
-    button {
-        padding: 10px 15px;
-        background-color: #3498db;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    button:hover {
-        background-color: #2980b9;
-    }
-</style>
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <h1>Gerenciador de Tarefas</h1>
+
+        <?php
+        // Exibe mensagens de sucesso ou erro, se existirem
+        if (isset($_SESSION['message'])) {
+            echo "<p class='message'>" . htmlspecialchars($_SESSION['message']) . "</p>";
+            unset($_SESSION['message']);
+        }
+        if (isset($_SESSION['error_message'])) {
+            echo "<p class='error'>" . htmlspecialchars($_SESSION['error_message']) . "</p>";
+            unset($_SESSION['error_message']);
+        }
+        ?>
 
         <form action="adicionar.php" method="POST">
             <h3>Adicionar Nova Tarefa</h3>
@@ -177,6 +82,7 @@ $result_categorias = $conn->query($sql_categorias);
             <select id="categoria" name="id_categoria">
                 <option value="">Sem Categoria</option>
                 <?php
+                // Preenche o dropdown de categorias
                 if ($result_categorias->num_rows > 0) {
                     while($row_cat = $result_categorias->fetch_assoc()) {
                         echo "<option value='" . $row_cat['id'] . "'>" . htmlspecialchars($row_cat['nome']) . "</option>";
@@ -224,17 +130,14 @@ $result_categorias = $conn->query($sql_categorias);
                         echo "<td>" . htmlspecialchars($row['descricao']) . "</td>";
                         echo "<td>" . htmlspecialchars($row['categoria_nome']) . "</td>";
                         
-                        // Exibição visual do status
                         echo "<td class='" . ($is_concluida ? 'status-concluida' : 'status-pendente') . "'>";
                         echo ($is_concluida ? 'Concluída' : 'Pendente');
                         echo "</td>";
 
-                        // Formata a data de vencimento
                         echo "<td>" . ($row['data_vencimento'] ? date('d/m/Y', strtotime($row['data_vencimento'])) : 'N/A') . "</td>";
                         
                         echo "<td class='botoes-acao'>";
                         echo "<a href='editar.php?id=" . $row['id'] . "' class='editar'>Editar</a>";
-                        // Adiciona o pop-up de confirmação
                         echo "<a href='excluir.php?id=" . $row['id'] . "' class='excluir' onclick='return confirm(\"Tem certeza que deseja excluir esta tarefa?\")'>Excluir</a>";
                         echo "</td>";
                         echo "</tr>";
