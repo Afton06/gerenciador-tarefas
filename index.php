@@ -44,23 +44,119 @@ $result_categorias = $conn->query($sql_categorias);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador de Tarefas</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 900px; margin: auto; }
-        .acoes a { margin-right: 10px; text-decoration: none; color: #007bff; }
-        .acoes a:hover { text-decoration: underline; }
-        .filtro-form { margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #f2f2f2; color: #333; }
-        tr:hover { background-color: #f9f9f9; }
-        .status-concluida { color: green; font-weight: bold; }
-        .status-pendente { color: orange; font-weight: bold; }
-        .tarefa-concluida { text-decoration: line-through; color: #888; }
-        .botoes-acao { display: flex; gap: 5px; }
-        .botoes-acao a { padding: 5px 10px; border-radius: 5px; }
-        .botoes-acao .editar { background-color: #ffc107; color: black; }
-        .botoes-acao .excluir { background-color: #dc3545; color: white; }
-        .botoes-acao a:hover { opacity: 0.8; }
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f7f9;
+        color: #333;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: auto;
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h3 {
+        color: #2c3e50;
+        border-bottom: 2px solid #e74c3c;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    form, .filtro-form {
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        border: 1px solid #eee;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    th {
+        background-color: #eaf2f8;
+        color: #333;
+        font-weight: 600;
+    }
+
+    tr:hover {
+        background-color: #f5f5f5;
+    }
+
+    .status-concluida {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .status-pendente {
+        color: #ffc107;
+        font-weight: bold;
+    }
+
+    .tarefa-concluida {
+        text-decoration: line-through;
+        color: #888;
+    }
+
+    .botoes-acao {
+        display: flex;
+        gap: 8px;
+    }
+
+    .botoes-acao a {
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-weight: 600;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    .botoes-acao .editar {
+        background-color: #f39c12;
+        color: white;
+    }
+
+    .botoes-acao .excluir {
+        background-color: #e74c3c;
+        color: white;
+    }
+    
+    .botoes-acao .editar:hover, .botoes-acao .excluir:hover {
+        opacity: 0.9;
+    }
+
+    button {
+        padding: 10px 15px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #2980b9;
+    }
+</style>
     </style>
 </head>
 <body>
