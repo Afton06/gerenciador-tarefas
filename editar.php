@@ -1,39 +1,25 @@
 <?php
 session_start();
+include 'Tarefa.php';
 include 'conexao.php';
 
-// Cria uma instância da classe de conexão
+$tarefaObj = new Tarefa();
 $database = new Conexao();
-
-// Obtém a conexão ativa
 $conn = $database->getConnection();
 
 $tarefa = null;
 $categorias = [];
 
-// Lógica para exibir os dados no formulário
 if (isset($_GET['id'])) {
-    $id = $_GET['id'];
-    $stmt = $conn->prepare("SELECT * FROM tarefas WHERE id = ?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($result->num_rows > 0) {
-        $tarefa = $result->fetch_assoc();
-    }
-    $stmt->close();
+    $tarefa = $tarefaObj->buscarPorId($_GET['id']);
 
-    // Busca as categorias para o campo de seleção
     $sql_categorias = "SELECT * FROM categorias";
     $result_categorias = $conn->query($sql_categorias);
-    if ($result_categorias->num_rows > 0) {
-        while($row = $result_categorias->fetch_assoc()) {
-            $categorias[] = $row;
-        }
+    while($row = $result_categorias->fetch_assoc()) {
+        $categorias[] = $row;
     }
 }
 
-// Lógica para atualizar os dados após o envio do formulário
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_POST['id'];
     $titulo = $_POST['titulo'];
@@ -42,23 +28,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id_categoria = $_POST['id_categoria'];
     $data_vencimento = $_POST['data_vencimento'];
 
-    $stmt = $conn->prepare("UPDATE tarefas SET titulo = ?, descricao = ?, status = ?, id_categoria = ?, data_vencimento = ? WHERE id = ?");
-    $stmt->bind_param("sssiis", $titulo, $descricao, $status, $id_categoria, $data_vencimento, $id);
-
-    if ($stmt->execute()) {
+    if ($tarefaObj->editar($id, $titulo, $descricao, $status, $id_categoria, $data_vencimento)) {
         $_SESSION['message'] = "Tarefa atualizada com sucesso!";
-        header("Location: index.php");
-        exit();
     } else {
-        $_SESSION['error_message'] = "Erro ao atualizar: " . $stmt->error;
-        header("Location: index.php");
-        exit();
+        $_SESSION['error_message'] = "Erro ao atualizar tarefa.";
     }
-    $stmt->close();
+
+    header("Location: index.php");
+    exit();
 }
 
-// O restante do HTML
-if ($tarefa) {
+if ($tarefa):
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -106,10 +86,7 @@ if ($tarefa) {
 </body>
 </html>
 <?php
-} else {
+else:
     echo "Tarefa não encontrada.";
-}
-
-// Fecha a conexão com o banco de dados
-$database->closeConnection();
+endif;
 ?>
