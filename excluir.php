@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'Tarefa.php';
+include_once 'Tarefa.php';
 
 $tarefa = new Tarefa();
 

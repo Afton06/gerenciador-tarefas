@@ -1,7 +1,7 @@
 <?php
 session_start();
-include 'Tarefa.php';
-include 'conexao.php';
+include_once 'Tarefa.php';
+include_once 'conexao.php';
 
 $tarefaObj = new Tarefa();
 $database = new Conexao();

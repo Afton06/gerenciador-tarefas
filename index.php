@@ -1,13 +1,13 @@
 <?php
 session_start();
-include 'Tarefa.php';
+include_once 'Tarefa.php';
 
 $tarefaObj = new Tarefa();
 $status = isset($_GET['status']) && $_GET['status'] != "" ? $_GET['status'] : null;
 $result = $tarefaObj->listar($status);
 
 // Categorias (usamos conexão direta)
-include 'conexao.php';
+include_once 'conexao.php';
 $database = new Conexao();
 $conn = $database->getConnection();
 $sql_categorias = "SELECT * FROM categorias ORDER BY nome ASC";
