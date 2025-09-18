@@ -1,48 +1,28 @@
 <?php
 session_start();
-if (!isset($_SESSION['usuario'])) {
+if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.php");
     exit();
 }
 
-include 'conexao.php';
-$pdo = Conexao::getConexao();
-
-// Filtros
-$where = "";
-$params = [];
-
-if (!empty($_GET['status'])) {
-    $where = "WHERE tarefas.status = ?";
-    $params[] = $_GET['status'];
-}
-
-$sql = "SELECT tarefas.*, categorias.nome AS categoria_nome 
-        FROM tarefas 
-        LEFT JOIN categorias ON tarefas.id_categoria = categorias.id
-        $where 
-        ORDER BY tarefas.data_criacao DESC";
-
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$tarefas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$categorias = $pdo->query("SELECT * FROM categorias ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC);
+// Recebe dados enviados pelo Controller
+// $tarefas e $categorias devem vir do TarefaController
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>Gerenciador de Tarefas</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 <div class="container">
-    <h1>Bem-vindo, <?php echo htmlspecialchars($_SESSION['usuario']); ?>!</h1>
-    <a href="logout.php">Sair</a>
+    <h1>Bem-vindo, <?= htmlspecialchars($_SESSION['usuario_nome']); ?>!</h1>
+    <a href="../Controllers/UsuarioController.php?action=logout">Sair</a>
 
     <h2>Adicionar Nova Tarefa</h2>
-    <form action="adicionar.php" method="POST">
+    <form action="../Controllers/TarefaController.php?action=adicionar" method="POST">
         <label>Título:</label><br>
         <input type="text" name="titulo" required><br><br>
 
@@ -86,8 +66,8 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nome ASC")->fetchAl
                     <td><?= $t['status'] == 'concluida' ? 'Concluída' : 'Pendente'; ?></td>
                     <td><?= $t['data_vencimento'] ? date('d/m/Y', strtotime($t['data_vencimento'])) : 'N/A'; ?></td>
                     <td>
-                        <a href="editar.php?id=<?= $t['id']; ?>">Editar</a>
-                        <a href="excluir.php?id=<?= $t['id']; ?>" onclick="return confirm('Excluir?')">Excluir</a>
+                        <a href="../Controllers/TarefaController.php?action=editar&id=<?= $t['id']; ?>">Editar</a>
+                        <a href="../Controllers/TarefaController.php?action=excluir&id=<?= $t['id']; ?>" onclick="return confirm('Excluir?')">Excluir</a>
                     </td>
                 </tr>
             <?php endforeach; ?>

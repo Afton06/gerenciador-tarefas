@@ -1,28 +1,56 @@
 <?php
-require_once 'header.php';
-require_once '../Controllers/CategoriaController.php';
+session_start();
+if (!isset($_SESSION['usuario'])) {
+    header("Location: login.php");
+    exit();
+}
 
-$categorias = CategoriaController::listarCategorias();
+require_once '../Models/Categoria.php';
+$categorias = Categoria::getAll();
 ?>
-
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Categorias</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
 <div class="container">
-    <h2>Categorias</h2>
+    <h1>Categorias</h1>
+    <a href="dashboard.php">Voltar</a> | 
+    <a href="../Controllers/UsuarioController.php?action=logout">Sair</a>
 
-    <h3>Adicionar Categoria</h3>
-    <form method="POST" action="../Controllers/CategoriaController.php?action=adicionar">
-        <label>Nome:</label><br>
-        <input type="text" name="nome" required><br><br>
+    <h2>Adicionar Categoria</h2>
+    <form action="../Controllers/CategoriaController.php?action=adicionar" method="POST">
+        <input type="text" name="nome" required>
         <button type="submit">Adicionar</button>
     </form>
 
-    <hr>
-    <h3>Lista de Categorias</h3>
-    <ul>
-        <?php foreach($categorias as $cat): ?>
-            <li>
-                <?= htmlspecialchars($cat['nome']) ?>
-                <a href="../Controllers/CategoriaController.php?action=excluir&id=<?= $cat['id'] ?>" onclick="return confirm('Deseja realmente excluir?')">Excluir</a>
-            </li>
-        <?php endforeach; ?>
-    </ul>
+    <h2>Lista de Categorias</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php if ($categorias): ?>
+            <?php foreach ($categorias as $c): ?>
+                <tr>
+                    <td><?= htmlspecialchars($c['nome']); ?></td>
+                    <td>
+                        <a href="editar_categoria.php?id=<?= $c['id']; ?>">Editar</a>
+                        <a href="../Controllers/CategoriaController.php?action=excluir&id=<?= $c['id']; ?>" onclick="return confirm('Excluir?')">Excluir</a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <tr><td colspan="2">Nenhuma categoria encontrada.</td></tr>
+        <?php endif; ?>
+        </tbody>
+    </table>
 </div>
+</body>
+</html>

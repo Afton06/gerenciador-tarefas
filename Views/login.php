@@ -1,22 +1,12 @@
 <?php
 session_start();
-require_once '../Models/Usuario.php';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'];
-    $senha = $_POST['senha'];
-    $usuario = Usuario::autenticar($email, $senha);
-    if ($usuario) {
-        $_SESSION['usuario_id'] = $usuario['id'];
-        $_SESSION['usuario_nome'] = $usuario['nome'];
-        header("Location: dashboard.php");
-        exit();
-    } else {
-        $erro = "Email ou senha incorretos!";
-    }
+if (isset($_SESSION['usuario'])) {
+    header("Location: dashboard.php");
+    exit();
 }
+$error = $_SESSION['error_message'] ?? '';
+unset($_SESSION['error_message']);
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -27,8 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div class="container">
     <h1>Login</h1>
-    <?php if(isset($erro)) echo "<p class='error'>".$erro."</p>"; ?>
-    <form action="" method="POST">
+    <?php if ($error): ?>
+        <p class="error"><?= htmlspecialchars($error) ?></p>
+    <?php endif; ?>
+    <form action="../Controllers/UsuarioController.php?action=login" method="POST">
         <label>Email:</label><br>
         <input type="email" name="email" required><br><br>
         <label>Senha:</label><br>
