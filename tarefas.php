@@ -8,8 +8,6 @@ if (!isset($_SESSION['usuario'])) {
 require_once '../Models/Tarefa.php';
 require_once '../Models/Categoria.php';
 
-$tarefas = Tarefa::getAll($_GET['status'] ?? null);
-$categorias = Categoria::getAll();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">

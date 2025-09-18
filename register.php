@@ -1,81 +1,54 @@
 <?php
 session_start();
-include 'conexao.php';
-$pdo = Conexao::getConexao();
+require 'conexao.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome = $_POST['nome'];
-    $email = $_POST['email'];
-    $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
+    $pdo = Conexao::getConexao();
+    $nome = $_POST['nome'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $senha = $_POST['senha'] ?? '';
 
-    // Verifica se o email já existe
-    $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE email = ?");
+    $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE email = ?");
     $stmt->execute([$email]);
     if ($stmt->fetch()) {
-        $error = "Email já cadastrado!";
-    } else {
-        $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)");
-        if ($stmt->execute([$nome, $email, $senha])) {
-            $_SESSION['message'] = "Conta criada com sucesso! Faça login.";
-            header("Location: login.php");
-            exit();
-        } else {
-            $error = "Erro ao criar conta!";
-        }
+        $_SESSION['error_message'] = "E-mail já cadastrado!";
+        header("Location: register.php");
+        exit;
     }
+
+    $hash = password_hash($senha, PASSWORD_DEFAULT);
+    $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)");
+    $stmt->execute([$nome, $email, $hash]);
+
+    $_SESSION['message'] = "Cadastro realizado com sucesso! Faça login.";
+    header("Location: login.php");
+    exit;
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Criar Conta</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Registrar</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
     <h1>Criar Conta</h1>
-
-    <?php if (!empty($error)): ?>
-        <div class="error"><?= htmlspecialchars($error) ?></div>
+    <?php if (!empty($_SESSION['error_message'])): ?>
+        <p class="error"><?= $_SESSION['error_message']; unset($_SESSION['error_message']); ?></p>
     <?php endif; ?>
-    <?php if (!empty($_SESSION['message'])): ?>
-        <div class="message"><?= htmlspecialchars($_SESSION['message']); unset($_SESSION['message']); ?></div>
-    <?php endif; ?>
-
     <form method="POST">
-        <label>Nome</label>
-        <input type="text" name="nome" required>
-
-        <label>Email</label>
-        <input type="email" name="email" required>
-
-        <label>Senha</label>
-        <div class="password-field">
-            <input type="password" name="senha" id="senha" required>
-            <span class="toggle-password" onclick="toggleSenha()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-                    <path d="M16 8s-3-5.333-8-5.333S0 8 0 8s3 5.333 8 5.333S16 8 16 8zM8 11.333A3.333 3.333 0 1 1 8 4.667a3.333 3.333 0 0 1 0 6.666z"/>
-                    <path d="M8 6.667a1.333 1.333 0 1 0 0 2.666A1.333 1.333 0 0 0 8 6.667z"/>
-                </svg>
-            </span>
-        </div>
-
-        <button type="submit">Cadastrar</button>
-
-        <div class="links">
-            <a href="login.php">Já tem conta? Login</a>
-            <a href="forgot.php">Esqueci minha senha</a>
-        </div>
+        <label>Nome:</label><br>
+        <input type="text" name="nome" required><br>
+        <label>Email:</label><br>
+        <input type="email" name="email" required><br>
+        <label>Senha:</label><br>
+        <input type="password" name="senha" required><br>
+        <button type="submit">Registrar</button>
     </form>
+    <p>Já tem conta? <a href="login.php">Faça login</a></p>
 </div>
-
-<script>
-function toggleSenha() {
-    var input = document.getElementById('senha');
-    input.type = input.type === 'password' ? 'text' : 'password';
-}
-</script>
 </body>
 </html>

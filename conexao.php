@@ -1,17 +1,13 @@
 <?php
 class Conexao {
-    private static $instance = null;
+    private static $instancia;
 
     public static function getConexao() {
-        if (self::$instance === null) {
-            try {
-                self::$instance = new PDO("mysql:host=localhost;dbname=gerenciador_tarefas;charset=utf8", "root", "");
-                self::$instance->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            } catch (PDOException $e) {
-                die("Erro de conexão: " . $e->getMessage());
-            }
+        if (!isset(self::$instancia)) {
+            self::$instancia = new PDO("mysql:host=localhost;dbname=gerenciador_tarefas;charset=utf8", "root", "");
+            self::$instancia->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }
-        return self::$instance;
+        return self::$instancia;
     }
 }
 ?>
