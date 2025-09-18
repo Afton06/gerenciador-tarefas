@@ -30,7 +30,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $titulo = $_POST['titulo'];
-    $descricao = $_POST['descricao'] ?: null;
+    $descricao = $_POST['descricao'];
+
+    if (strlen($descricao) > 20) {
+        $_SESSION['error_message'] = "A descrição deve ter no máximo 20 caracteres!";
+        header("Location: editar.php?id=" . $_POST['id']);
+        exit();
+    }
+
     $status = $_POST['status'];
     $data_vencimento = !empty($_POST['data_vencimento']) ? $_POST['data_vencimento'] : null;
     $id_categoria = !empty($_POST['id_categoria']) ? $_POST['id_categoria'] : null;
